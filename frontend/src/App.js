@@ -1,38 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
-
-
-const socket = io("http://localhost:8080", {
-  transports: ['websocket'],
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
-});
-
-socket.on("connect", () => {
-  console.log("Connected to WebSocket");
-});
 
 function App() {
   const [randomNumber, setRandomNumber] = useState(null);
+  const socketRef = useRef(null);
 
-    useEffect(() => {
-      // Listen for the 'random_number' event
-      socket.on("random_number", (data) => {
-        console.log("Received random number:", data);
-        setRandomNumber(data.random_number);
-      });
+  useEffect(() => {
+    socketRef.current = io("http://localhost:8080", {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
 
-      // Clean up the socket connection when the component is unmounted
-      return () => {
-        socket.off("random_number");
-        socket.disconnect();
-      };
-    }, []);
+    socketRef.current.on("connect", () => {
+      console.log("Connected to WebSocket");
+    });
+
+    socketRef.current.on("random_number", (data) => {
+      console.log("Received random number:", data);
+      setRandomNumber(data.random_number);
+    });
+
+    return () => {
+      socketRef.current.off("random_number");
+      socketRef.current.disconnect();
+    };
+  }, []);
 
   const handleButtonClick = () => {
-    console.log('Button clicked!'); // Add a log to verify the button click is firing
-    socket.emit("generate_random", { message: "Generate a random number!" });
+    socketRef.current.emit("generate_random", { message: "Generate a random number!" });
   };
 
   return (
