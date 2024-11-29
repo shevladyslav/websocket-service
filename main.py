@@ -1,3 +1,5 @@
+import random
+
 from aiohttp import web
 import socketio
 
@@ -16,8 +18,10 @@ def connect(sid, environ):
 
 
 @sio.event
-async def chat_message(sid, data):
-    print("message ", data)
+async def generate_random(sid, data):
+    random_number = random.randint(1, 100)
+    print(f"Generated random number: {random_number}")
+    await sio.emit('random_number', {'random_number': random_number}, room=sid)
 
 
 @sio.event
@@ -28,4 +32,4 @@ def disconnect(sid):
 app.router.add_get('/', index)
 
 if __name__ == '__main__':
-    web.run_app(app)
+    web.run_app(app, host="0.0.0.0", port=8080)
