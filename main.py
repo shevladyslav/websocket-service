@@ -1,7 +1,6 @@
-import random
-
 from aiohttp import web
 import socketio
+import random
 
 sio = socketio.AsyncServer(cors_allowed_origins=["http://localhost:3000"])
 app = web.Application()
@@ -14,7 +13,7 @@ async def index(request):
 
 @sio.event
 def connect(sid, environ):
-    print("connect ", sid)
+    print(f"connect {sid}")
 
 
 @sio.event
@@ -26,7 +25,7 @@ async def generate_random(sid, data):
 
 @sio.event
 def disconnect(sid):
-    print('disconnect ', sid)
+    print(f'disconnect {sid}')
 
 
 app.router.add_get('/', index)
